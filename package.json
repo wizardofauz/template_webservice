@@ -10,7 +10,8 @@
     "build": "node esbuild.mjs",
     "fmt": "prettier --write src/**/*.ts",
     "lint": "eslint 'src/**/*.{ts,tsx,json}'",
-    "lint:fix": "eslint --fix 'src/**/*.{ts,tsx,json}'"
+    "lint:fix": "eslint --fix 'src/**/*.{ts,tsx,json}'",
+    "prepare": "husky install"
   },
   "devDependencies": {
     "@sentry/node": "^7.15.0",
@@ -25,6 +26,7 @@
     "eslint": "^8.25.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
+    "husky": "^8.0.1",
     "koa": "^2.13.4",
     "koa-bodyparser": "^4.3.0",
     "koa-etag": "^4.0.0",
