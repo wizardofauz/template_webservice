@@ -9,10 +9,12 @@ import Router from 'koa-router';
 
 import config from './config';
 
-Sentry.init({
-  dsn: 'https://ca50d711ef974296878b56e7ca3b9a68@o370634.ingest.sentry.io/5530442',
-  tracesSampleRate: 1.0,
-});
+if (config.SENTRY_URL) {
+  Sentry.init({
+    dsn: config.SENTRY_URL,
+    tracesSampleRate: 1.0,
+  });
+}
 
 const eventRecordingMiddleware = (ctx, next) => {
   return new Promise<void>((resolve) => {
@@ -25,7 +27,7 @@ const eventRecordingMiddleware = (ctx, next) => {
     });
     local.run(async () => {
       Sentry.getCurrentHub().configureScope((scope) =>
-        scope.addEventProcessor((event) => Sentry.Handlers.parseRequest(event, ctx.request, { user: false }))
+        scope.addEventProcessor((event) => Sentry.Handlers.parseRequest(event, ctx.request, { user: true }))
       );
       await next();
       resolve();
@@ -112,6 +114,7 @@ api.use(function (ctx, next) {
 
 apiRouter.get('/config', async (ctx: Context) => {
   ctx.body = {
+    validAt: new Date().toDateString(),
     ...config,
   };
 });
@@ -133,6 +136,8 @@ apiRouter.get('/config', async (ctx: Context) => {
 //         return next();
 //     }
 // });
+
+api.use(apiRouter.routes());
 
 const port = process.env.PORT || 3000;
 console.log('Running on', port);
