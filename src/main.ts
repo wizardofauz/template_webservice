@@ -6,8 +6,10 @@ import bodyParser from 'koa-bodyparser';
 import etag from 'koa-etag';
 import helmet from 'koa-helmet';
 import Router from 'koa-router';
-
+import { status } from './routes/status';
+import { logger } from './logger';
 import config from './config';
+import { mapRequest, unmapRequest } from './routes/utils/health';
 
 if (config.SENTRY_URL) {
   Sentry.init({
@@ -106,16 +108,18 @@ api.use(
 const apiRouter = new Router();
 
 // Request logging
-api.use(function (ctx, next) {
+api.use(function (ctx: Context, next) {
+  mapRequest(ctx);
   const user = ctx.state.user && ctx.state.user.sub ? ctx.state.user.sub : 'anonymous';
-  console.log(`Serving route ${ctx.path} for user ${user}`);
-  return next();
+  logger.info(`Serving route ${ctx.path} for user ${user}`);
+  next().then(() => unmapRequest(ctx));
 });
 
-apiRouter.get('/config', async (ctx: Context) => {
+apiRouter.get('/status', status);
+apiRouter.get('/config', (ctx: Context) => {
   ctx.body = {
-    validAt: new Date().toDateString(),
-    ...config,
+      validAt: new Date().getTime(),
+      ...config,
   };
 });
 
@@ -140,7 +144,7 @@ apiRouter.get('/config', async (ctx: Context) => {
 api.use(apiRouter.routes());
 
 const port = process.env.PORT || 3000;
-console.log('Running on', port);
+logger.info('Running on', port);
 api.listen(port, () => {
-  console.log(`API Server listening on port ${port}`);
+  logger.info(`API Server listening on port ${port}`);
 });
