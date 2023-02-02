@@ -3,8 +3,9 @@ import * as child_process from 'child_process';
 
 const release = child_process
   .execSync('git describe --long --first-parent')
-  .toString();
-console.log('Using release')
+  .toString()
+  .trim();
+console.log('Using release', release);
 
 build({
     entryPoints: ['src/main.ts'],
